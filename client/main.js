@@ -1,6 +1,23 @@
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap-theme.css';
+
 import { Meteor } from 'meteor/meteor';
 import Vue from 'vue';
 
-import d3 from 'd3';
+// Do we need to do this? The following link says no:
+// https://www.npmjs.com/package/vue-meteor-tracker
+import VueTracker from 'vue-meteor-tracker';
+Vue.use(VueTracker);
 
-console.log(d3);
+import VueMeta from 'vue-meta';
+Vue.use(VueMeta);
+
+// Main app
+import app from './network.vue';
+
+Meteor.startup(() => {
+  new Vue({
+    render: h => h(app),
+  }).$mount('app');
+});
