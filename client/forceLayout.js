@@ -9,73 +9,75 @@ export default class ForceLayout {
   }
 
   setNodes(nodes) {
-    console.log("Got nodes", nodes);
+    console.log("Got nodes", nodes.length);
+    if( nodes.length === 0 ) return;
     
-    // Could transform data some way here
-    this.nodes = nodes;
-
-    const nodeEnter = this.node.data(this.nodes)
-    .enter().append("circle")
-      .attr("r", (d) => d.size * 2);
-    // .attr("fill", function(d) { return color(d.size); });
-    // .call(d3.drag()
-    //   .on("start", dragstarted)
-    //   .on("drag", dragged)
-    //   .on("end", dragended));
-
-    nodeEnter.append("title")
-      .text(function(d) { return d.id; });
+    // This is kinda sketchy - depends on d3 and vue ordering to be the same
+    // But also, whenever data is loaded, should have the right number of elements in the DOM
+    const node = this.svg
+    .selectAll(".nodes circle")
+      .data(nodes)
+    .attr("fill", (d) => this.color(d.size) )
+    .call(d3.drag()
+      .on("start", (d) => {
+        if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on("drag", function(d) {
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      })
+      .on("end", (d) => {
+        if (!d3.event.active) this.simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      })
+    );
 
     this.simulation
-      .nodes(this.nodes, (d) => d._id)
-      .on("tick", () => {
-        this.link
+      .nodes(nodes)
+      .on("tick.nodes", function() {
+        node
+          .attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; });
+      })
+      .restart();
+  }
+
+  setEdges(edges) {
+    console.log("Got edges", edges.length);
+    if( edges.length === 0 ) return;
+
+    const link = this.svg
+    .selectAll(".links line")
+      .data(edges);
+
+    this.simulation.force("link")
+      .links(edges);
+
+    this.simulation
+      .on("tick.edges", function() {
+        link
           .attr("x1", function(d) { return d.source.x; })
           .attr("y1", function(d) { return d.source.y; })
           .attr("x2", function(d) { return d.target.x; })
           .attr("y2", function(d) { return d.target.y; });
-
-        this.node
-          .attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return d.y; });
-      });
-
-    this.simulation.restart();
-  }
-
-  setEdges(edges) {
-    console.log("Got edges", edges);
-
-    this.edges = edges;
-
-    this.link.data(this.edges)
-    .enter().append("line")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
-
-    this.simulation.force("link")
-      .links(this.edges);
-
-    this.simulation.restart();
+      }).restart();
   }
 
   init() {
     // Based on code from https://bl.ocks.org/mbostock/4062045
-    // Adapted to a JS object
+    // Adapted to a JS object and Vue
+    console.log("Setting up network");
 
-    // this.color = d3.scaleOrdinal(d3.schemeCategory20);
+    this.color = d3.scaleOrdinal(d3.schemeCategory20);
 
     this.simulation = d3.forceSimulation()
-      .force("link", d3.forceLink().id(function(d) { return d.id; }))
+      .force("link", d3.forceLink().id( function(d) { return d._id; } ))
       .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(0, 0)); // already centered by outside g
-
-    this.link = this.svg.append("g")
-      .attr("class", "links")
-    .selectAll("line")
-
-    this.node = this.svg.append("g")
-      .attr("class", "nodes")
-    .selectAll("circle")
+      // already centered by outside g
+      .force("center", d3.forceCenter(0, 0));
 
     // this.simulation.stop();
   }
