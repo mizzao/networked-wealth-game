@@ -49,12 +49,9 @@ export default class ForceLayout {
     console.log("Got edges", edges.length);
     if( edges.length === 0 ) return;
 
-    const link = this.svg
-    .selectAll(".links line")
+    d3.select(this.$el)
+      .selectAll(".links line")
       .data(edges);
-
-    this.simulation.force("link")
-      .links(edges);
 
     this.simulation
       .on("tick.edges", function() {
@@ -73,11 +70,7 @@ export default class ForceLayout {
 
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
 
-    this.simulation = d3.forceSimulation()
-      .force("link", d3.forceLink().id( function(d) { return d._id; } ))
-      .force("charge", d3.forceManyBody())
-      // already centered by outside g
-      .force("center", d3.forceCenter(0, 0));
+
 
     // this.simulation.stop();
   }

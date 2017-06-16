@@ -3,11 +3,16 @@
         <g :style="{transform: `translate(${width/2}px, ${height/2}px)`}">
             <g class="links">
                 <line v-for="edge in edges"
-                      :stroke-width="Math.sqrt(edge.value)">
+                      :stroke-width="Math.sqrt(edge.value)"
+                      :x1="edge.source.x"
+                      :y1="edge.source.y"
+                      :x2="edge.target.x"
+                      :y2="edge.target.y">
                 </line>
             </g>
             <g class="nodes">
-                <circle v-for="node in nodes" :r="node.size * 2">
+                <circle v-for="node in nodes"
+                        :r="node.size * 2" :cx="node.x" :cy="node.y">
                     <title>{{ node._id }}</title>
                 </circle>
             </g>
@@ -31,10 +36,10 @@
       }
     },
 
-    data() { // default data initialization
-      return {
-        nodes: [],
-        edges: []
+    data: function() { // default data initialization
+      return  {
+        mNodes: [],
+        mEdges: []
       }
     },
 
@@ -43,30 +48,50 @@
       $subscribe: {
         'network': []
       },
-      nodes() {
+      mNodes() {
         return Nodes.find();
       },
-      edges() {
+      mEdges() {
         return Edges.find();
       }
     },
 
-    watch: {
-      nodes: function() {
-        this.layout.setNodes(this.nodes);
+    computed: {
+      nodes() {
+        // Try creating properties on these arrays before modifying them
+        const ns = this.mNodes.map(a => Object.assign({}, a));
+        this.simulation.nodes(ns);
+
+        return ns;
       },
-      edges: function() {
-        this.layout.setEdges(this.edges);
+      edges() {
+        const es = this.mEdges.map(a => Object.assign({}, a));
+
+        try {
+          this.simulation.force("link")
+            .links(es);
+        } catch (e) {
+          console.log(e);
+        }
+
+        return es;
       }
     },
 
     created: function() {
+      this.simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id( function(d) { return d._id; } ))
+        .force("charge", d3.forceManyBody())
+        // already centered by outside g
+        .force("center", d3.forceCenter(0, 0));
       
     },
     mounted: function() {
-      const svg = d3.select(this.$el);
 
-      this.layout = new ForceLayout(svg.select('g'));
+    },
+
+    methods: {
+
     }
 
   }
