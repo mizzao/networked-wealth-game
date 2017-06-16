@@ -1,3 +1,4 @@
+// Note that no d3 'tick' is needed here, because Vue handles the updates.
 <template>
     <svg :width="width" :height="height">
         <g :style="{transform: `translate(${width/2}px, ${height/2}px)`}">
@@ -39,7 +40,9 @@
     data: function() { // default data initialization
       return  {
         mNodes: [],
-        mEdges: []
+        mEdges: [],
+        nodes: [],
+        edges: []
       }
     },
 
@@ -56,25 +59,22 @@
       }
     },
 
-    computed: {
-      nodes() {
-        // Try creating properties on these arrays before modifying them
+    // Create properties on these arrays before modifying them on the simulation
+    watch: {
+      mNodes() {
         const ns = this.mNodes.map(a => Object.assign({}, a));
         this.simulation.nodes(ns);
 
-        return ns;
+        // This triggers Vue to set up observers
+        this.nodes = ns;
       },
-      edges() {
+      mEdges() {
         const es = this.mEdges.map(a => Object.assign({}, a));
 
-        try {
-          this.simulation.force("link")
-            .links(es);
-        } catch (e) {
-          console.log(e);
-        }
+        this.simulation.force("link")
+          .links(es);
 
-        return es;
+        this.edges = es;
       }
     },
 
@@ -84,10 +84,31 @@
         .force("charge", d3.forceManyBody())
         // already centered by outside g
         .force("center", d3.forceCenter(0, 0));
-      
+
     },
     mounted: function() {
+      this.drag = d3.drag()
+        .on("start", (d, i) => {
+          if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
 
+          const node = this.nodes[i];
+          node.fx = node.x;
+          node.fy = node.y;
+        })
+        .on("drag", (d, i) => {
+          const node = this.nodes[i];
+          node.fx = d3.event.x;
+          node.fy = d3.event.y;
+        })
+        .on("end", (d, i) => {
+          if (!d3.event.active) this.simulation.alphaTarget(0);
+          const node = this.nodes[i];
+          node.fx = null;
+          node.fy = null;
+        });
+    },
+    updated: function() {
+      d3.select(this.$el).selectAll(".nodes circle").call(this.drag);
     },
 
     methods: {

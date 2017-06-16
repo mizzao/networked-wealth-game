@@ -9,31 +9,12 @@ export default class ForceLayout {
   }
 
   setNodes(nodes) {
-    console.log("Got nodes", nodes.length);
-    if( nodes.length === 0 ) return;
-    
     // This is kinda sketchy - depends on d3 and vue ordering to be the same
     // But also, whenever data is loaded, should have the right number of elements in the DOM
     const node = this.svg
     .selectAll(".nodes circle")
       .data(nodes)
-    .attr("fill", (d) => this.color(d.size) )
-    .call(d3.drag()
-      .on("start", (d) => {
-        if (!d3.event.active) this.simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-      })
-      .on("drag", function(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
-      })
-      .on("end", (d) => {
-        if (!d3.event.active) this.simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-      })
-    );
+    .attr("fill", (d) => this.color(d.size) );
 
     this.simulation
       .nodes(nodes)
@@ -46,9 +27,6 @@ export default class ForceLayout {
   }
 
   setEdges(edges) {
-    console.log("Got edges", edges.length);
-    if( edges.length === 0 ) return;
-
     d3.select(this.$el)
       .selectAll(".links line")
       .data(edges);
@@ -69,8 +47,6 @@ export default class ForceLayout {
     console.log("Setting up network");
 
     this.color = d3.scaleOrdinal(d3.schemeCategory20);
-
-
 
     // this.simulation.stop();
   }
