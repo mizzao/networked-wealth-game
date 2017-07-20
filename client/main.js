@@ -14,7 +14,7 @@ import VueMeta from 'vue-meta';
 Vue.use(VueMeta);
 
 // Main app
-import app from './network.vue';
+import app from './network-vis.vue';
 
 Meteor.startup(() => {
   new Vue({

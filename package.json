@@ -9,6 +9,7 @@
     "bootstrap": "^3.3.7",
     "d3": "^4.9.1",
     "meteor-node-stubs": "~0.2.4",
+    "vis": "^4.20.1",
     "vue": "^2.3.3",
     "vue-meta": "^1.0.4",
     "vue-meteor-tracker": "^1.2.1",

@@ -5,7 +5,7 @@ Meteor.startup(() => {
 
   if( Nodes.find().count() === 0 ) {
     data.nodes.forEach(function(n) {
-      Nodes.insert({_id: n.id, size: n.group});
+      Nodes.insert(n);
     });
   }
 
