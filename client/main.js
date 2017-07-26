@@ -14,10 +14,13 @@ import VueMeta from 'vue-meta';
 Vue.use(VueMeta);
 
 // Main app
-import app from './network-vis.vue';
+import AppLayout from '/imports/ui/AppLayout.vue';
+
+import routerFactory from '/imports/routes';
 
 Meteor.startup(() => {
   new Vue({
-    render: h => h(app),
+    router: routerFactory.create(),
+    render: h => h(AppLayout),
   }).$mount('app');
 });

@@ -21,3 +21,4 @@ static-html
 akryum:vue-component
 jquery@1.11.10
 dynamic-import
+akryum:vue-router2
