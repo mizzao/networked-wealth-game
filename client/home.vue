@@ -4,8 +4,12 @@
       <router-link :to="{ name:'overview' }" exact>Overview</router-link>
     </li>
     
-    <li v-for="id in players">
-      <router-link :to="{ name: 'player', params: { id } }" exact>Player {{ id }}</router-link>            
+    <li v-for="(node, idx) in nodes">
+      <router-link :to="{ name: 'player', params: { id: node._id } }" exact>Player {{ idx+1 }}</router-link>            
+    </li>
+
+    <li>
+      <router-link :to="{ name:'controls' }" exact>Control Panel</router-link>
     </li>
   </ul>
 </template>
@@ -14,8 +18,17 @@
   export default {
 
     data: function() {
-      return {
-        players: [ 1, 2, 3, 4 ]
+      return  {
+        nodes: []
+      }
+    },
+
+    meteor: {
+      $subscribe: {
+        'network': []
+      },
+      nodes() {
+        return Nodes.find();
       }
     }
 

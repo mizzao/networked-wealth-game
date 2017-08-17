@@ -58,6 +58,8 @@
       // Note this is not using Vue reactivity, but just passing changes directly to Vis
       this.nodesHandle = Nodes.find().observeChanges({
         added: (id, fields) => {
+          // We have to copy _id to id here, or it won't sync correctly
+          fields.id = id;
           visNodes.add(fields);
         },
         changed: function(id, fields) {
@@ -71,6 +73,7 @@
 
       this.edgesHandle = Edges.find().observeChanges({
         added: (id, fields) => {
+          fields.id = id;
           visEdges.add(fields);
         },
         changed: function(id, fields) {

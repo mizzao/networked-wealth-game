@@ -13,5 +13,10 @@ export default [
     path: '/player/:id',
     name: 'player',
     component: '/client/player.vue'
+  },
+  {
+    path: '/controls',
+    name: 'controls',
+    component: '/client/controls.vue'
   }
 ];
