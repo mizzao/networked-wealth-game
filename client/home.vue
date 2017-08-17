@@ -1,10 +1,13 @@
 <template>  
-  <div>
-    <router-link :to="{ name:'overview' }" exact>Overview</router-link>
+  <ul>
+    <li>
+      <router-link :to="{ name:'overview' }" exact>Overview</router-link>
+    </li>
     
-    <router-link v-for="id in players" :to="{ name: 'player', params: { id } }" exact>Player {{ id }}</router-link>        
-    
-  </div>
+    <li v-for="id in players">
+      <router-link :to="{ name: 'player', params: { id } }" exact>Player {{ id }}</router-link>            
+    </li>
+  </ul>
 </template>
 
 <script>

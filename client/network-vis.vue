@@ -6,6 +6,7 @@
 
 <script>
   import vis from 'vis';
+  import Vue from 'vue';
 
   export default {
 
@@ -55,28 +56,42 @@
       
       // Watch for changes
       // Note this is not using Vue reactivity, but just passing changes directly to Vis
-      Nodes.find().observeChanges({
+      this.nodesHandle = Nodes.find().observeChanges({
         added: (id, fields) => {
           visNodes.add(fields);
         },
-        changed: function() {
-
+        changed: function(id, fields) {
+          fields.id = id;
+          visNodes.update(fields);
         },
-        removed: function() {
-
+        removed: function(id) {
+          visNodes.remove({id});
         }
       });
 
-      Edges.find().observeChanges({
+      this.edgesHandle = Edges.find().observeChanges({
         added: (id, fields) => {
           visEdges.add(fields);
         },
+        changed: function(id, fields) {
+          fields.id = id;
+          visEdges.update(fields);
+        },
+        removed: function(id) {
+          visEdges.remove({id});
+        }
       });
 
       // Make sure we can see everything after loading
       Meteor.setTimeout( () => network.fit(), 4000 );
+    },
+
+    beforeDestroy: function() {
+      this.nodesHandle.stop();
+      this.edgesHandle.stop();
     }
   }
+
 </script>
 
 <style>
