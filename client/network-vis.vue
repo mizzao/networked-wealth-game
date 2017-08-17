@@ -56,6 +56,13 @@
         nodes: visNodes,
         edges: visEdges
       }, options);
+
+      // Bind events to network
+      network.on("select", (selection) => {
+        const node = selection.nodes[0];
+        console.log(node);
+        this.$emit('selectedNode', node);
+      });
       
       // Watch for changes
       // Note this is not using Vue reactivity, but just passing changes directly to Vis
