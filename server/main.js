@@ -5,7 +5,21 @@ Meteor.startup(() => {
 
 });
 
-Meteor.publish('network', function(){
+Meteor.publish('network', function( playerId ){
+  console.log(playerId);
+  if (playerId != null) {
+    // Return a player-specific view
+    return [
+      Nodes.find(),
+      Edges.find({ 
+        $or: [
+          { from: playerId },
+          { to: playerId }
+        ]
+      })
+    ];  
+  }
+
   return [
     Nodes.find(),
     Edges.find()

@@ -9,6 +9,7 @@
   import Vue from 'vue';
 
   export default {
+    props: [ 'playerId' ],
 
     data: function() {
       return  {
@@ -19,7 +20,9 @@
 
     meteor: {
       $subscribe: {
-        'network': []
+        'network': function() {
+          return [ this.playerId ];
+        }
       },
       nodes() {
         return Nodes.find();

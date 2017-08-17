@@ -1,7 +1,7 @@
 <template>
   <div>
     User {{ $route.params.id }}
-    <network-vis></network-vis>
+    <network-vis v-bind:player-id="$route.params.id"></network-vis>
   </div>  
 </template>
 
