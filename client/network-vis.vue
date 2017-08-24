@@ -49,6 +49,9 @@
             min: 10,
             max: 30
           }
+        },
+        interaction: {
+          hover: true
         }
       };
 
@@ -58,10 +61,20 @@
       }, options);
 
       // Bind events to network
-      network.on("select", (selection) => {
+      // Hovering and blurring nodes
+      network.on("hoverNode", (e) => {
+        console.log(e);
+        this.$emit('hoveredNode', e.node);
+      });
+      network.on("blurNode", (e) => {
+        this.$emit('hoveredNode', null);
+      });
+
+      // Clicking on nodes
+      network.on("click", (selection) => {
         const node = selection.nodes[0];
-        console.log(node);
-        this.$emit('selectedNode', node);
+        if (node == null) return;
+        this.$emit('clickedNode', node);
       });
       
       // Watch for changes
