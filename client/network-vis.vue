@@ -96,6 +96,7 @@
 
       this.edgesHandle = Edges.find().observeChanges({
         added: (id, fields) => {
+          // Save id for later removal
           fields.id = id;
           visEdges.add(fields);
         },

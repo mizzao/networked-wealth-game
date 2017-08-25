@@ -50,6 +50,14 @@ Meteor.methods({
       });
     }    
   },
+  'network-empty': function() {
+    Meteor.call('reset-network');
+    
+    // Create 16 nodes and grab their ids
+    for( let i = 0; i < 16; i++ ) {           
+      Nodes.insert({ value: 1});
+    }
+  },
   'network-max-avg-clust': function() {
     Meteor.call('reset-network');
 
@@ -75,5 +83,18 @@ Meteor.methods({
       // Link to next clusters
       Edges.insert({from: nids[b+3], to: nids[(b+4) % 16], value: 1 });
     }
-  }
+  },
+  'process-actions'() {
+    PlayerActions.find().forEach(function(a, i) {
+      // Skip self-links
+      if( a.from === a.to ) return;
+      
+      // Edges represent reputation
+      Edges.upsert({from: a.from, to: a.to}, {$inc: {value: a.amount}});
+      // Nodes represent wealth
+      Nodes.upsert(a.to, {$inc: {value: a.amount}});
+
+      PlayerActions.remove(a._id);
+    });  
+  },
 });
