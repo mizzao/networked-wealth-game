@@ -5,7 +5,7 @@
     </li>
     
     <li v-for="(node, idx) in nodes">
-      <router-link :to="{ name: 'player', params: { id: node._id } }" exact>Player {{ idx+1 }}</router-link>            
+      <router-link :to="{ name: 'player', params: { myNodeId: node._id } }" exact>Player {{ idx+1 }}</router-link>            
     </li>
 
     <li>

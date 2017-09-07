@@ -84,6 +84,16 @@ Meteor.methods({
       Edges.insert({from: nids[b+3], to: nids[(b+4) % 16], value: 1 });
     }
   },
+  'give-endowment'(amount) {
+    Meteor._debug(`Each player is getting ${amount}.`);
+    // Each node gets {amount} endowment, and the rest moves into value
+    Nodes.find().forEach((node) => {
+      Nodes.update(node._id, { 
+        $inc: {value: node.endowment || 0},
+        $set: {endowment: amount} 
+      });
+    });
+  },
   'process-actions'() {
     PlayerActions.find().forEach(function(a, i) {
       // Skip self-links

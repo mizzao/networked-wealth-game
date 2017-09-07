@@ -33,8 +33,6 @@
     },
     
     mounted: function() {
-      console.log(this.$el);
-
       // create an array with nodes
       const visNodes = new vis.DataSet([]);
 
@@ -46,8 +44,12 @@
         nodes: {
           shape: "dot",
           scaling: {
-            min: 10,
-            max: 30
+            min: 10
+          }
+        },
+        edges: {
+          color: {
+            inherit: "from" // Makes outgoing edges share color of self node
           }
         },
         interaction: {
@@ -63,7 +65,6 @@
       // Bind events to network
       // Hovering and blurring nodes
       network.on("hoverNode", (e) => {
-        console.log(e);
         this.$emit('hoveredNode', e.node);
       });
       network.on("blurNode", (e) => {
@@ -83,14 +84,19 @@
         added: (id, fields) => {
           // We have to copy _id to id here, or it won't sync correctly
           fields.id = id;
+          // Set special color for myself 
+          if (id === this.playerId) fields.color = "#E50000";
           visNodes.add(fields);
         },
         changed: function(id, fields) {
           fields.id = id;
           visNodes.update(fields);
         },
-        removed: function(id) {
+        removed: (id) => {
           visNodes.remove({id});
+
+          // A dirty hack to go back to the home page upon a route reset
+          if (id === this.playerId) this.$router.push('/');
         }
       });
 
@@ -110,7 +116,7 @@
       });
 
       // Make sure we can see everything after loading
-      Meteor.setTimeout( () => network.fit(), 4000 );
+      Meteor.setTimeout( () => network.fit(), 3000 );
     },
 
     beforeDestroy: function() {

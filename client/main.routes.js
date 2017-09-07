@@ -10,13 +10,14 @@ export default [
     component: '/client/network-vis.vue',
   },
   {
-    path: '/player/:id',
+    path: '/player/:myNodeId',
     name: 'player',
-    component: '/client/player.vue'
+    component: '/client/player/player.vue',
+    props: true // https://router.vuejs.org/en/essentials/passing-props.html
   },
   {
     path: '/controls',
     name: 'controls',
-    component: '/client/controls.vue'
+    component: '/client/admin/controls.vue'
   }
 ];
