@@ -7,7 +7,7 @@
     </form>
 </template>
 
-<script>  
+<script>
   export default {
     props: [ 'buttonText' ],
     data: function() {
@@ -17,7 +17,7 @@
     },
     methods: {
       onSubmit: function() {
-        this.$emit("submit", this.amount);
+        this.$emit("submit", parseInt(this.amount) );
       }
     }
   }

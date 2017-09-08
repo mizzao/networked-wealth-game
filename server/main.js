@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
+import { check } from 'meteor/check';
 
 Meteor.startup(() => {
 
@@ -11,13 +12,13 @@ Meteor.publish('network', function( playerId ){
     // Return a player-specific view
     return [
       Nodes.find(),
-      Edges.find({ 
+      Edges.find({
         $or: [
           { from: playerId },
           { to: playerId }
         ]
       })
-    ];  
+    ];
   }
 
   return [
@@ -37,24 +38,24 @@ Meteor.methods({
     // nodes: {id, value}
     // edges: {from, to, value}
     const data = JSON.parse(Assets.getText("miserables.json"));
-    
+
     if( Nodes.find().count() === 0 ) {
       data.nodes.forEach(function(n) {
         Nodes.insert(n);
       });
     }
-  
+
     if( Edges.find().count() === 0 ) {
       data.links.forEach(function (e) {
         Edges.insert(e);
       });
-    }    
+    }
   },
   'network-empty': function() {
     Meteor.call('reset-network');
-    
+
     // Create 16 nodes and grab their ids
-    for( let i = 0; i < 16; i++ ) {           
+    for( let i = 0; i < 6; i++ ) {
       Nodes.insert({ value: 1});
     }
   },
@@ -63,9 +64,9 @@ Meteor.methods({
 
     // Generate the 16-node max avg clustering network from Mason & Watts
     const nids = [];
-    
+
     // Create 16 nodes and grab their ids
-    for( let i = 0; i < 16; i++ ) {           
+    for( let i = 0; i < 16; i++ ) {
       nids.push( Nodes.insert({ value: 1}) );
     }
 
@@ -85,12 +86,14 @@ Meteor.methods({
     }
   },
   'give-endowment'(amount) {
+    check(amount, Number);
+
     Meteor._debug(`Each player is getting ${amount}.`);
     // Each node gets {amount} endowment, and the rest moves into value
     Nodes.find().forEach((node) => {
-      Nodes.update(node._id, { 
+      Nodes.update(node._id, {
         $inc: {value: node.endowment || 0},
-        $set: {endowment: amount} 
+        $set: {endowment: amount}
       });
     });
   },
@@ -98,13 +101,13 @@ Meteor.methods({
     PlayerActions.find().forEach(function(a, i) {
       // Skip self-links
       if( a.from === a.to ) return;
-      
+
       // Edges represent reputation
       Edges.upsert({from: a.from, to: a.to}, {$inc: {value: a.amount}});
       // Nodes represent wealth
       Nodes.upsert(a.to, {$inc: {value: a.amount}});
 
       PlayerActions.remove(a._id);
-    });  
+    });
   },
 });
