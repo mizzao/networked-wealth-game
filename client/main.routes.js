@@ -19,5 +19,10 @@ export default [
     path: '/controls',
     name: 'controls',
     component: '/client/admin/controls.vue'
+  },
+  {
+    path: '/data',
+    name: 'dataDownload',
+    component: '/client/admin/data-download.vue'
   }
 ];

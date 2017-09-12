@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import { check } from 'meteor/check';
+import { shuffle } from '/imports/util';
 
 Meteor.startup(() => {
 
@@ -54,9 +55,14 @@ Meteor.methods({
   'network-empty': function(numPlayers) {
     Meteor.call('reset-network');
 
+    const nicknames = Assets.getText('animals.txt').split('\n');
+    if (numPlayers > nicknames.length) throw new Meteor.Error(400, "Network too large");
+
+    shuffle(nicknames);
     // Create this many nodes and grab their ids
+    // Give them convenient animal nicknames for identification
     for( let i = 0; i < numPlayers; i++ ) {
-      Nodes.insert({ value: 0 });
+      Nodes.insert({ value: 0, label: nicknames[i] });
     }
   },
   'network-max-avg-clust': function() {

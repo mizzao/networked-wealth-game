@@ -1,8 +1,9 @@
 <template>
   <div class="row">
     <div class="col-sm-6">
-      <router-link class="btn btn-lg btn-success" :to="{ name:'overview' }" exact>Overview</router-link>
-      <router-link class="btn btn-lg btn-warning" :to="{ name:'controls' }" exact>Control Panel</router-link>
+      <router-link class="btn btn-lg btn-success" :to="{ name: 'overview' }" exact>Overview</router-link>
+      <router-link class="btn btn-lg btn-warning" :to="{ name: 'controls' }" exact>Control Panel</router-link>
+      <router-link class="btn btn-lg btn-info" :to="{ name: 'dataDownload' }" exact>Download Data</router-link>
     </div>
 
     <div class="clearfix"></div>

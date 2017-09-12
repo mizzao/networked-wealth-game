@@ -42,6 +42,7 @@
       const BIGNODE_SIZE = 50;
 
       // create a network
+      // For more information on this library see http://visjs.org/docs/network/
       const options = {
         nodes: {
           shape: "dot",
