@@ -46,7 +46,7 @@
         nodes: {
           shape: "dot",
           scaling: {
-            min: 3, // Minimum node size (otherwise we can't click on it)
+            min: 5, // Minimum node size (otherwise we can't click on it)
             customScalingFunction(min, max, total, value) {
               // Scale node diameter according to sqrt
               // Also, don't take into account minimum values. Show absolute value.
@@ -70,22 +70,22 @@
         }
       };
 
-      const network = new vis.Network(this.$el, {
+      this.network = new vis.Network(this.$el, {
         nodes: visNodes,
         edges: visEdges
       }, options);
 
       // Bind events to network
       // Hovering and blurring nodes
-      network.on("hoverNode", (e) => {
+      this.network.on("hoverNode", (e) => {
         this.$emit('hoveredNode', e.node);
       });
-      network.on("blurNode", (e) => {
+      this.network.on("blurNode", (e) => {
         this.$emit('hoveredNode', null);
       });
 
       // Clicking on nodes
-      network.on("click", (selection) => {
+      this.network.on("click", (selection) => {
         const node = selection.nodes[0];
         if (node == null) return;
         this.$emit('clickedNode', node);
@@ -129,12 +129,14 @@
       });
 
       // Make sure we can see everything after loading
-      Meteor.setTimeout( () => network.fit(), 3000 );
+      Meteor.setTimeout( () => this.network.fit(), 3000 );
     },
 
     beforeDestroy: function() {
       this.nodesHandle.stop();
       this.edgesHandle.stop();
+
+      this.network.destroy();
     }
   }
 

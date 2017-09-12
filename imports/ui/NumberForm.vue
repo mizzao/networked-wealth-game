@@ -9,10 +9,16 @@
 
 <script>
   export default {
-    props: [ 'buttonText' ],
+    props: {
+      buttonText: String,
+      initialValue: {
+        type: Number,
+        default: 10
+      }
+    },
     data: function() {
       return {
-        amount: 10
+        amount: this.initialValue
       }
     },
     methods: {

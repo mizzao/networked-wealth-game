@@ -51,12 +51,12 @@ Meteor.methods({
       });
     }
   },
-  'network-empty': function() {
+  'network-empty': function(numPlayers) {
     Meteor.call('reset-network');
 
-    // Create 16 nodes and grab their ids
-    for( let i = 0; i < 6; i++ ) {
-      Nodes.insert({ value: 1});
+    // Create this many nodes and grab their ids
+    for( let i = 0; i < numPlayers; i++ ) {
+      Nodes.insert({ value: 0 });
     }
   },
   'network-max-avg-clust': function() {
