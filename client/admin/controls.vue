@@ -11,11 +11,6 @@
       </div>
     </div>
 
-    <!--
-    <button class="btn" v-on:click="networkMac">Generate Maximum Average Clustering</button>
-    <button class="btn btn-primary "v-on:click="processActions">Process Actions</button>
-    -->
-
   </div>
 </template>
 

@@ -2,9 +2,13 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import { check } from 'meteor/check';
 import { shuffle } from '/imports/util';
+import json2csv from 'json2csv';
 
-Meteor.startup(() => {
-
+Meteor.publish('game', function(allGames=false) {
+  if (allGames) {
+    return Games.find();
+  }
+  return Games.find({active: true});
 });
 
 Meteor.publish('network', function( playerId ){
@@ -28,32 +32,38 @@ Meteor.publish('network', function( playerId ){
   ];
 });
 
+function resetNetwork() {
+  // Save any existing game data
+  const game = saveData();
+  // Set any game that is active to inactive
+  if (game != null ) Games.update(game._id, {$set: {active: false}});
+
+  Nodes.remove({});
+  Edges.remove({});
+}
+
+function saveData() {
+  const game = Games.findOne({active: true});
+  if ( game == null ) return;
+
+  // Save existing data
+  const nodes = Nodes.find({}, { fields: {value: 1} }).fetch()
+  const edges = Edges.find({}, { fields: { from: 1, to: 1, value: 1}}).fetch();
+
+  GameData.insert({
+    gameId: game._id,
+    round: game.round, // end of the current round.
+    timestamp: new Date,
+    nodes,
+    edges
+  })
+
+  return game;
+}
+
 Meteor.methods({
-  'reset-network': function() {
-    Nodes.remove({});
-    Edges.remove({});
-  },
-  'network-lesmis':  function() {
-    Meteor.call('reset-network');
-    // Data format:
-    // nodes: {id, value}
-    // edges: {from, to, value}
-    const data = JSON.parse(Assets.getText("miserables.json"));
-
-    if( Nodes.find().count() === 0 ) {
-      data.nodes.forEach(function(n) {
-        Nodes.insert(n);
-      });
-    }
-
-    if( Edges.find().count() === 0 ) {
-      data.links.forEach(function (e) {
-        Edges.insert(e);
-      });
-    }
-  },
   'network-empty': function(numPlayers) {
-    Meteor.call('reset-network');
+    resetNetwork();
 
     const nicknames = Assets.getText('animals.txt').split('\n');
     if (numPlayers > nicknames.length) throw new Meteor.Error(400, "Network too large");
@@ -64,35 +74,22 @@ Meteor.methods({
     for( let i = 0; i < numPlayers; i++ ) {
       Nodes.insert({ value: 0, label: nicknames[i] });
     }
-  },
-  'network-max-avg-clust': function() {
-    Meteor.call('reset-network');
 
-    // Generate the 16-node max avg clustering network from Mason & Watts
-    const nids = [];
-
-    // Create 16 nodes and grab their ids
-    for( let i = 0; i < 16; i++ ) {
-      nids.push( Nodes.insert({ value: 1}) );
-    }
-
-    // Create clusters and links between them:
-    // 0-1, 0-2, 1-2, 1-3, 2-3 mod 4
-    for( let j = 0; j < 4; j++ ) {
-      const b = 4*j;
-      // Links between clusters
-      Edges.insert({from: nids[b], to: nids[b+1], value: 1 });
-      Edges.insert({from: nids[b], to: nids[b+2], value: 1 });
-      Edges.insert({from: nids[b+1], to: nids[b+2], value: 1 });
-      Edges.insert({from: nids[b+1], to: nids[b+3], value: 1 });
-      Edges.insert({from: nids[b+2], to: nids[b+3], value: 1 });
-
-      // Link to next clusters
-      Edges.insert({from: nids[b+3], to: nids[(b+4) % 16], value: 1 });
-    }
+    Games.insert({
+      active: true,
+      timestamp: new Date,
+      numPlayers,
+      round: 0
+    });
   },
   'give-endowment'(amount) {
     check(amount, Number);
+
+    const game = saveData();
+    if( game == null ) throw new Meteor.Error(400, "No active game");
+
+    // Increment game round.
+    Games.update(game._id, {$inc: {round: 1}});
 
     Meteor._debug(`Each player is getting ${amount}.`);
     // Each node gets {amount} endowment, and the rest moves into value
@@ -103,17 +100,29 @@ Meteor.methods({
       });
     });
   },
-  'process-actions'() {
-    PlayerActions.find().forEach(function(a, i) {
-      // Skip self-links
-      if( a.from === a.to ) return;
+  'dl-node-data'(gameId) {
+    const data = GameData.find({gameId}, {fields: {edges: 0}}).fetch();
 
-      // Edges represent reputation
-      Edges.upsert({from: a.from, to: a.to}, {$inc: {value: a.amount}});
-      // Nodes represent wealth
-      Nodes.upsert(a.to, {$inc: {value: a.amount}});
+    const fields = [
+      'round',
+      'timestamp',
+      'nodes._id',
+      'nodes.value'
+    ];
 
-      PlayerActions.remove(a._id);
-    });
+    return json2csv({data, fields, unwindPath: 'nodes'});
+  },
+  'dl-edge-data'(gameId) {
+    const data = GameData.find({gameId}, {fields: {nodes: 0}}).fetch();
+
+    const fields = [
+      'round',
+      'timestamp',
+      'edges.from',
+      'edges.to',
+      'edges.value'
+    ];
+
+    return json2csv({data, fields, unwindPath: 'edges'});
   },
 });

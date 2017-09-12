@@ -1,5 +1,9 @@
 <template>
   <div>
+    <h2 v-if="currentGame">
+      Round {{ currentGame.round }}
+    </h2>
+
     <div class="alert alert-info">
       <h3 v-if="myNode">Your wealth: <span class="label label-primary">{{ myNode.value }}</span></h3>
 
@@ -25,7 +29,8 @@ export default {
   data: function() {
     return {
       myNode: null,
-      selectedNode: null
+      selectedNode: null,
+      currentGame: null
     }
   },
   meteor: {
@@ -49,6 +54,14 @@ export default {
         return Nodes.findOne(id);
       }
     },
+    $subscribe: {
+      'game': function() {
+        return [ false ]; // Just get the active game
+      }
+    },
+    currentGame() {
+      return Games.findOne({active: true});
+    }
   },
   methods: {
 
