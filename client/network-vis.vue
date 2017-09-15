@@ -68,6 +68,20 @@
         },
         interaction: {
           hover: true
+        },
+        layout: {
+          improvedLayout: true
+        },
+        physics: {
+          // solver: "forceAtlas2Based"
+          barnesHut: { // Playing with these parameters didn't really work, so went with the above
+            gravitationalConstant: -5000,
+            centralGravity: 0.3,
+            springLength: 90,
+            springConstant: 0.1,
+            damping: 0.7,
+            avoidOverlap: 0
+          }
         }
       };
 
@@ -99,7 +113,7 @@
           // We have to copy _id to id here, or it won't sync correctly
           fields.id = id;
           // Set special color for myself
-          if (id === this.playerId) fields.color = "#E50000";
+          if (id === this.playerId) fields.color = "#5cb85c";
           visNodes.add(fields);
         },
         changed: function(id, fields) {

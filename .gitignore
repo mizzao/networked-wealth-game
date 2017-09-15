@@ -1,2 +1,6 @@
 node_modules/
 .vscode
+
+# Database transfer stuff
+.dumps
+backup.sh
