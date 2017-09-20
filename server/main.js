@@ -11,24 +11,26 @@ Meteor.publish('game', function(allGames=false) {
   return Games.find({active: true});
 });
 
-Meteor.publish('network', function( playerId ){
-  if (playerId != null) {
-    // Return a player-specific view
-    return [
-      Nodes.find(),
-      Edges.find({
-        $or: [
-          { from: playerId },
-          { to: playerId }
-        ]
-      })
-    ];
+Meteor.publish('network', function(playerId, edges=true){
+  const result = [ Nodes.find() ];
+
+  if ( edges ) {
+    if (playerId != null) {
+      result.push(
+        Edges.find({
+          $or: [
+            { from: playerId },
+            { to: playerId }
+          ]
+        })
+      );
+    }
+    else {
+      result.push( Edges.find() );
+    }
   }
 
-  return [
-    Nodes.find(),
-    Edges.find()
-  ];
+  return result;
 });
 
 function resetNetwork() {

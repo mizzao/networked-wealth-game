@@ -29,7 +29,8 @@
 
     meteor: {
       $subscribe: {
-        'network': []
+        // All players, no edges
+        'network': [ null, false ]
       },
       nodes() {
         return Nodes.find();

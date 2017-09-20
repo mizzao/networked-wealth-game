@@ -162,7 +162,7 @@
                   // Scale node diameter according to sqrt
                   // Also, don't take into account minimum values. Show absolute value.
                   // See docs: http://visjs.org/docs/network/nodes.html
-                  if (max == min) return 0; // This displays a medium size if wealth is not visible
+                  if (max == min) return 0;
                   const scale = 1 / Math.sqrt(Math.max(Config.network.largestNodeSize, max));
                   return Math.max(0, Math.sqrt(value) * scale);
                 }
