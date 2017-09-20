@@ -7,6 +7,7 @@
 <script>
   import vis from 'vis';
   import Vue from 'vue';
+  import Config from '/imports/config';
 
   export default {
     props: [ 'playerId' ],
@@ -20,9 +21,12 @@
 
     meteor: {
       $subscribe: {
+        'game': function() {
+          return [ false ]; // Just get the active game
+        },
         'network': function() {
           return [ this.playerId ];
-        }
+        },
       },
       nodes() {
         return Nodes.find();
@@ -39,24 +43,12 @@
       // create an array with edges
       const visEdges = new vis.DataSet([]);
 
-      const BIGNODE_SIZE = 50;
-
       // create a network
       // For more information on this library see http://visjs.org/docs/network/
       const options = {
         nodes: {
-          shape: "dot",
-          scaling: {
-            min: 5, // Minimum node size (otherwise we can't click on it)
-            customScalingFunction(min, max, total, value) {
-              // Scale node diameter according to sqrt
-              // Also, don't take into account minimum values. Show absolute value.
-              // See docs: http://visjs.org/docs/network/nodes.html
-              if (max == min) return 0;
-              const scale = 1 / Math.sqrt(Math.max(BIGNODE_SIZE, max));
-              return Math.max(0, Math.sqrt(value) * scale);
-            }
-          }
+          shape: "dot"
+          // Scaling options determined by network settings, see below
         },
         edges: {
           color: {
@@ -72,16 +64,17 @@
         layout: {
           improvedLayout: true
         },
-        physics: {
-          // solver: "forceAtlas2Based"
-          barnesHut: { // Playing with these parameters didn't really work, so went with the above
-            gravitationalConstant: -5000,
-            centralGravity: 0.3,
-            springLength: 90,
-            springConstant: 0.1,
-            damping: 0.7,
-            avoidOverlap: 0
-          }
+        physics: { // These parameters can improve the rendering of the network layout
+          solver: "forceAtlas2Based"
+          // Playing with these parameters didn't really work, so went with the above
+          // barnesHut: {
+          //   gravitationalConstant: -5000,
+          //   centralGravity: 0.3,
+          //   springLength: 90,
+          //   springConstant: 0.1,
+          //   damping: 0.7,
+          //   avoidOverlap: 0
+          // }
         }
       };
 
@@ -106,6 +99,13 @@
         this.$emit('clickedNode', node);
       });
 
+      // Watch for changes to the active game, wealth visibility etc
+      this.gameHandle = Games.find().observeChanges({
+        added: (id, fields) => {
+          this.setWealthVisibility(fields.wealthVisible);
+        }
+      });
+
       // Watch for changes
       // Note this is not using Vue reactivity, but just passing changes directly to Vis
       this.nodesHandle = Nodes.find().observeChanges({
@@ -113,7 +113,7 @@
           // We have to copy _id to id here, or it won't sync correctly
           fields.id = id;
           // Set special color for myself
-          if (id === this.playerId) fields.color = "#5cb85c";
+          if (id === this.playerId) fields.color = Config.player.ownColor;
           visNodes.add(fields);
         },
         changed: function(id, fields) {
@@ -144,10 +144,47 @@
       });
 
       // Make sure we can see everything after loading
-      Meteor.setTimeout( () => this.network.fit(), 3000 );
+      Meteor.setTimeout( () => {
+        // If we browsed off too quickly, might throw an error
+        try { this.network.fit(); }
+        catch(e) {}
+      }, 3000 );
     },
-
+    methods: {
+      setWealthVisibility(visible = true) {
+        if (visible) {
+          console.log("Wealth shown by node size.");
+          this.network.setOptions({
+            nodes: {
+              scaling: {
+                min: 5, // Minimum node size (otherwise we can't click on it)
+                customScalingFunction(min, max, total, value) {
+                  // Scale node diameter according to sqrt
+                  // Also, don't take into account minimum values. Show absolute value.
+                  // See docs: http://visjs.org/docs/network/nodes.html
+                  if (max == min) return 0; // This displays a medium size if wealth is not visible
+                  const scale = 1 / Math.sqrt(Math.max(Config.network.largestNodeSize, max));
+                  return Math.max(0, Math.sqrt(value) * scale);
+                }
+              }
+            }
+          })
+        }
+        else {
+          console.log("Wealth not visible by node size.");
+          this.network.setOptions({
+            nodes: {
+              scaling: {
+                min: 15,
+                max: 15
+              }
+            }
+          })
+        }
+      }
+    },
     beforeDestroy: function() {
+      this.gameHandle.stop();
       this.nodesHandle.stop();
       this.edgesHandle.stop();
 

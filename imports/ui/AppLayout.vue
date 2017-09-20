@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-fluid">
     <!-- Menu -->
     <app-menu></app-menu>
 

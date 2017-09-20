@@ -12,7 +12,6 @@ Meteor.publish('game', function(allGames=false) {
 });
 
 Meteor.publish('network', function( playerId ){
-  console.log(playerId);
   if (playerId != null) {
     // Return a player-specific view
     return [
@@ -62,7 +61,12 @@ function saveData() {
 }
 
 Meteor.methods({
-  'network-empty': function(numPlayers) {
+  'new-game': function(numPlayers, multiplier, endowmentIncrement, wealthVisible) {
+    check(numPlayers, Number);
+    check(multiplier, Number);
+    check(endowmentIncrement, Number);
+    check(wealthVisible, Boolean);
+
     resetNetwork();
 
     const nicknames = Assets.getText('animals.txt').split('\n');
@@ -79,14 +83,21 @@ Meteor.methods({
       active: true,
       timestamp: new Date,
       numPlayers,
-      round: 0
+      round: 0,
+      multiplier,
+      endowmentIncrement,
+      wealthVisible
     });
   },
-  'give-endowment'(amount) {
-    check(amount, Number);
-
+  'advance-round'() {
     const game = saveData();
     if( game == null ) throw new Meteor.Error(400, "No active game");
+
+    let amount = game.endowmentIncrement;
+    if( amount == null ) {
+      console.log(`Endowment not set for game ${game._id}, giving default amount of 10.`)
+      amount = 10;
+    }
 
     // Increment game round.
     Games.update(game._id, {$inc: {round: 1}});
@@ -99,6 +110,11 @@ Meteor.methods({
         $set: {endowment: amount}
       });
     });
+  },
+  'dl-game-data'(gameId) {
+    const data = Games.find(gameId).fetch();
+
+    return json2csv({data});
   },
   'dl-node-data'(gameId) {
     const data = GameData.find({gameId}, {fields: {edges: 0}}).fetch();

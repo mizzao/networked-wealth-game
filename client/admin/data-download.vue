@@ -19,6 +19,7 @@
         <td>{{ game.numPlayers }}</td>
         <td>{{ game.round }}</td>
         <td>
+          <button class="btn btn-xs btn-warning" @click="dlGame(game._id)">Game</button>
           <button class="btn btn-xs btn-primary" @click="dlNodes(game._id)">Nodes</button>
           <button class="btn btn-xs btn-success" @click="dlEdges(game._id)">Edges</button>
         </td>
@@ -50,6 +51,11 @@ export default {
     }
   },
   methods: {
+    dlGame(gameId) {
+      Meteor.call('dl-game-data', gameId, (err, res) => {
+        if (res) downloadCSV(res, "game.csv");
+      });
+    },
     dlNodes(gameId) {
       Meteor.call('dl-node-data', gameId, (err, res) => {
         if (res) downloadCSV(res, "nodes.csv");

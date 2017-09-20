@@ -7,7 +7,7 @@ export default [
   {
     path: '/overview',
     name: 'overview',
-    component: '/client/network-vis.vue',
+    component: '/client/admin/overview.vue',
   },
   {
     path: '/player/:myNodeId',
