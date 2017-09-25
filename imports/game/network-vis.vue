@@ -102,7 +102,9 @@
       // Watch for changes to the active game, wealth visibility etc
       this.gameHandle = Games.find().observeChanges({
         added: (id, fields) => {
-          this.setWealthVisibility(fields.wealthVisible);
+          // Show wealth in overview mode, or according to game settings
+          const wealthVisible = fields.wealthVisible || !this.playerId;
+          this.setWealthVisibility(wealthVisible);
         }
       });
 
@@ -152,6 +154,11 @@
     },
     methods: {
       setWealthVisibility(visible = true) {
+        // XXX seems to be a bug in vis.js:
+        // If there are no edges, this setting seems to be ignored.
+        // This is a corner case and shouldn't affect this demo game too much:
+        // At the beginning of the game everyone is the same size, and as soon as edges are added this displays properly.
+
         if (visible) {
           console.log("Wealth shown by node size.");
           this.network.setOptions({

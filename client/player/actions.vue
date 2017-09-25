@@ -16,7 +16,9 @@
       </div>
       <div v-else>
         <h3>Anonymous {{ selectedNode.label }}</h3>
-        <h3>Their wealth: <span class="label label-default">{{selectedNode.value}}</span></h3>
+        <h3 v-if="currentGame.wealthVisible || !myNode">
+          Their wealth: <span class="label label-default">{{selectedNode.value}}</span>
+          </h3>
       </div>
     </div>
 
